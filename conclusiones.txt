@@ -15,7 +15,7 @@ antes de enviarlo, y la suite hace lo mismo. Ejemplo: "Sofka123*" -> "U29ma2ExMj
 (Valores reales de la ultima ejecucion; el detalle esta en reportes/feature-html/)
 
   Caso 1 - Crear un nuevo usuario en signup
-    Entrada : {"username":"sofka_1791009206703_6947","password":"U29ma2ExMjMq"}
+    Entrada : {"username":"sofka_1791048188357_5350","password":"U29ma2ExMjMq"}
     Salida  : HTTP 200 - body: ""   (string JSON vacio)
     Resultado: OK - el usuario se crea.
 
@@ -25,8 +25,8 @@ antes de enviarlo, y la suite hace lo mismo. Ejemplo: "Sofka123*" -> "U29ma2ExMj
     Resultado: OK - el servicio rechaza el duplicado con un mensaje de error.
 
   Caso 3 - Usuario y password correcto en login
-    Entrada : {"username":"sofka_1791009202531_2401","password":"U29ma2ExMjMq"}
-    Salida  : HTTP 200 - body: "Auth_token: c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ=="
+    Entrada : {"username":"sofka_1791048186640_7714","password":"U29ma2ExMjMq"}
+    Salida  : HTTP 200 - body: "Auth_token: c29ma2FfMTc5MTA0ODE4NjY0MF83NzE0MTc5MTY0OA=="
     Resultado: OK - se entrega un token de autenticacion.
 
   Caso 4 - Usuario y password incorrecto en login
@@ -63,7 +63,7 @@ H4. El login permite enumerar usuarios.
 
 H5. Token predecible.
     El token es solo Base64 de <username> + <numero>. Ejemplo: decodificar
-    "c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ==" da "sofka_1791009202531_24011791609".
+    "c29ma2FfMTc5MTA0ODE4NjY0MF83NzE0MTc5MTY0OA==" da "sofka_1791048186640_77141791648".
     No esta firmado ni es aleatorio, y en logins consecutivos se obtiene el mismo token.
 
 H6. Password "codificado" en Base64.
@@ -84,9 +84,13 @@ H8. Inestabilidad del servidor.
     Mitigaciones aplicadas en el proyecto:
       - -Djava.net.preferIPv4Stack=true en la JVM de pruebas.
       - connectTimeout de 5 s para fallar rapido (un handshake normal tarda menos de 1 s).
-      - Reintento automatico de la suite con el plugin org.gradle.test-retry (hasta 6 veces).
+      - Reintento por request (RetryingHttpClientFactory, hasta 3 reintentos) solo ante
+        ConnectTimeoutException: la conexion no se establecio, asi que el POST no se envio
+        y reintentarlo no duplica usuarios.
+      - Como respaldo, reintento de la suite con el plugin org.gradle.test-retry (hasta 2 veces).
     Nota: "retry until" de Karate solo reintenta segun la respuesta y no ante excepciones
-    de red, por eso el reintento se hace a nivel de Gradle.
+    de red, y "configure httpRetryEnabled" usa la estrategia por defecto de Apache HttpClient,
+    que no reintenta POST ni timeouts de conexion; por eso se implemento un cliente propio.
 
 H9. Otros comportamientos observados.
     - El username distingue mayusculas de minusculas en el login.

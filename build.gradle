@@ -40,11 +40,13 @@ test {
     // api.demoblaze.com publica registro IPv6; en redes sin ruta IPv6 Java falla con NoRouteToHostException
     jvmArgs '--enable-preview', '-Djava.net.preferIPv4Stack=true'
     systemProperty 'karate.env', System.getProperty('karate.env')
+    systemProperty 'karate.tags', System.getProperty('karate.tags')
     outputs.upToDateWhen { false }
     // El servidor de demoblaze deja colgado ~10% de los handshakes TLS (ver conclusiones.txt);
-    // si la suite falla por red se reintenta la suite hasta 6 veces
+    // RetryingHttpClientFactory reintenta cada request con connect timeout; si aun asi la suite
+    // falla, Gradle la reintenta como respaldo
     retry {
-        maxRetries = 6
+        maxRetries = 2
     }
     testLogging {
         showStandardStreams = true
@@ -54,7 +56,9 @@ test {
 }
 
 // Copia los reportes de Karate a /reportes para que queden versionados en el repositorio
-tasks.register('copyKarateReports', Copy) {
+tasks.register('copyKarateReports', Sync) {
+    // Solo la suite completa actualiza /reportes; una ejecucion filtrada por tag no lo sobrescribe
+    onlyIf { !System.getProperty('karate.tags') }
     from layout.buildDirectory.dir('karate-reports')
     into layout.projectDirectory.dir('reportes')
 }

@@ -38,16 +38,27 @@ Prerrequisitos
 Pasos de ejecucion
 ------------------
   1. Clonar el repositorio:
-       git clone <URL_DEL_REPOSITORIO>
-       cd pruebatecnicasofkakarate
+       git clone https://github.com/J-hurtado94/pruebasofkakarate.git
+       cd pruebasofkakarate
 
   2. Ejecutar todas las pruebas:
        Linux / macOS :  ./gradlew clean test
        Windows       :  gradlew.bat clean test
 
-  3. (Opcional) Ejecutar solo un grupo de escenarios por tag, editando el metodo
-     .tags(...) en src/test/java/demoblaze/DemoblazeTest.java, por ejemplo:
-       .tags("@signup")   o   .tags("@login")
+  3. (Opcional) Ejecutar solo un feature o escenario por tag:
+       ./gradlew clean test -Dkarate.tags=@signup      (todo signup.feature)
+       ./gradlew clean test -Dkarate.tags=@login       (todo login.feature)
+       ./gradlew clean test -Dkarate.tags=@nuevo       (caso 1)
+       ./gradlew clean test -Dkarate.tags=@existente   (caso 2)
+       ./gradlew clean test -Dkarate.tags=@exitoso     (caso 3)
+       ./gradlew clean test -Dkarate.tags=@fallido     (caso 4)
+     En Windows se usa gradlew.bat en lugar de ./gradlew.
+     Una ejecucion filtrada no sobrescribe la carpeta reportes/ (solo la suite completa).
+
+     Desde IntelliJ: el boton de ejecutar que aparece en los .feature pertenece al plugin
+     de Cucumber y no funciona con Karate. Usar en su lugar las configuraciones incluidas
+     en la carpeta .run/ (selector de ejecucion arriba a la derecha):
+       "Karate - suite completa", "Karate - signup", "Karate - login"
 
   4. Revisar los resultados:
        - Consola: resumen de features y escenarios ejecutados.
@@ -66,6 +77,7 @@ Estructura del proyecto
   settings.gradle                           Nombre del proyecto y resolver de JDK (foojay)
   src/test/java/karate-config.js            Configuracion global: baseUrl, timeouts y funciones utilitarias
   src/test/java/demoblaze/DemoblazeTest.java  Runner JUnit 5 de Karate
+  src/test/java/demoblaze/RetryingHttpClientFactory.java  Cliente HTTP que reintenta los connect timeout
   src/test/java/demoblaze/signup.feature    Casos del servicio signup
   src/test/java/demoblaze/login.feature     Casos del servicio login
   src/test/java/demoblaze/crear-usuario.feature  Feature reutilizable (@ignore) que crea un usuario
@@ -78,5 +90,6 @@ Notas
     la suite puede ejecutarse cuantas veces se quiera sin cambiar datos.
   - El password se envia codificado en Base64, igual que lo hace el front de demoblaze.
   - El servidor de demoblaze presenta cortes intermitentes de red (ver conclusiones.txt).
-    Por eso build.gradle reintenta la suite hasta 6 veces si falla. Si un intento falla
-    por red, en la consola aparece un ConnectTimeoutException seguido del reintento.
+    Por eso cada request se reintenta hasta 3 veces ante un ConnectTimeoutException
+    (en consola aparece "ConnectTimeout contra ... - reintento N de 3"), y como respaldo
+    build.gradle reintenta la suite hasta 2 veces si aun asi falla.

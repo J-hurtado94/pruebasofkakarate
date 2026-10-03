@@ -10,8 +10,11 @@ class DemoblazeTest {
 
     @Test
     void testDemoblazeApi() {
+        // -Dkarate.tags=@login ejecuta solo los escenarios con ese tag (por defecto, toda la suite)
+        String tags = System.getProperty("karate.tags");
         SuiteResult result = Runner.path("classpath:demoblaze")
-                .tags("~@ignore")
+                .tags(tags == null || tags.isBlank() ? new String[]{"~@ignore"} : new String[]{tags, "~@ignore"})
+                .httpClientFactory(new RetryingHttpClientFactory())
                 .outputDir("build/karate-reports")
                 .outputJunitXml(true)
                 .outputHtmlReport(true)

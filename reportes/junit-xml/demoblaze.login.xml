@@ -1,4 +1,4 @@
-<testsuite name="Servicio Login de Demoblaze - POST https://api.demoblaze.com/login" tests="3" failures="0" time="4.166" skipped="0"><testcase classname="demoblaze.login" name="Usuario y password correcto en login" time="2.71"><properties><property name="tags" value="@login,@exitoso"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
+<testsuite name="Servicio Login de Demoblaze - POST https://api.demoblaze.com/login" tests="3" failures="0" time="1.727" skipped="0"><testcase classname="demoblaze.login" name="Usuario y password correcto en login" time="1.125"><properties><property name="tags" value="@login,@exitoso"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
 * username = uniqueUsername(&apos;sofka&apos;)
 karate.env = qa
 * password = &apos;Sofka123*&apos;
@@ -14,29 +14,29 @@ request:
 1 &gt; Connection: keep-alive
 1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
 {
-  &quot;username&quot;: &quot;sofka_1791009202531_2401&quot;,
+  &quot;username&quot;: &quot;sofka_1791048186640_7714&quot;,
   &quot;password&quot;: &quot;U29ma2ExMjMq&quot;
 }
 
-response time in milliseconds: 251
+response time in milliseconds: 380
 1 &lt; 200 POST https://api.demoblaze.com/signup
-1 &lt; date: Sat, 03 Oct 2026 06:33:23 GMT
+1 &lt; date: Sat, 03 Oct 2026 17:23:07 GMT
 1 &lt; server: Google Frontend
-1 &lt; x-cloud-trace-context: a08d32694dc5b949485da763af26b6b2
+1 &lt; x-cloud-trace-context: 07986807176c8328830f06ebf862cb21
 1 &lt; content-type: application/json
 1 &lt; Content-Length: 3
 &quot;&quot;
 
 
 POST https://api.demoblaze.com/signup
-200 (251 ms)
+200 (380 ms)
 Then 200
 And JSON.parse(response) == &apos;&apos;
 * baseUrl
 * &apos;login&apos;
 * requestBody = { username: &apos;#(usuario.username)&apos;, password: &apos;#(encodePassword(usuario.password))&apos; }
 * &apos;ENTRADA login correcto:&apos;, requestBody
-ENTRADA login correcto: {&quot;username&quot;:&quot;sofka_1791009202531_2401&quot;,&quot;password&quot;:&quot;U29ma2ExMjMq&quot;}
+ENTRADA login correcto: {&quot;username&quot;:&quot;sofka_1791048186640_7714&quot;,&quot;password&quot;:&quot;U29ma2ExMjMq&quot;}
 Given requestBody
 When post
 request:
@@ -47,41 +47,41 @@ request:
 1 &gt; Connection: keep-alive
 1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
 {
-  &quot;username&quot;: &quot;sofka_1791009202531_2401&quot;,
+  &quot;username&quot;: &quot;sofka_1791048186640_7714&quot;,
   &quot;password&quot;: &quot;U29ma2ExMjMq&quot;
 }
 
-response time in milliseconds: 270
+response time in milliseconds: 155
 1 &lt; 200 POST https://api.demoblaze.com/login
-1 &lt; date: Sat, 03 Oct 2026 06:33:25 GMT
+1 &lt; date: Sat, 03 Oct 2026 17:23:07 GMT
 1 &lt; server: Google Frontend
 1 &lt; vary: Accept-Encoding
-1 &lt; x-cloud-trace-context: 7c00cff172517c560aaba54ce075a3ed
+1 &lt; x-cloud-trace-context: a93be199b4f2727a71c764183239a3c3
 1 &lt; content-type: application/json
 1 &lt; Content-Length: 59
-&quot;Auth_token: c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ==&quot;
+&quot;Auth_token: c29ma2FfMTc5MTA0ODE4NjY0MF83NzE0MTc5MTY0OA==&quot;
 
 
 POST https://api.demoblaze.com/login
-200 (270 ms)
+200 (155 ms)
 * &apos;SALIDA login correcto -&gt; status:&apos;, responseStatus, &apos;body:&apos;, response
-SALIDA login correcto -&gt; status: 200 body: &quot;Auth_token: c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ==&quot;
+SALIDA login correcto -&gt; status: 200 body: &quot;Auth_token: c29ma2FfMTc5MTA0ODE4NjY0MF83NzE0MTc5MTY0OA==&quot;
 
 Then 200
 * authToken = JSON.parse(response)
 And authToken == &apos;#regex Auth_token: [A-Za-z0-9+/=]+&apos;
 * token = authToken.replace(&apos;Auth_token: &apos;, &apos;&apos;)
 * &apos;Token obtenido:&apos;, token
-Token obtenido: c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ==
+Token obtenido: c29ma2FfMTc5MTA0ODE4NjY0MF83NzE0MTc5MTY0OA==
 </system-out></testcase>
-<testcase classname="demoblaze.login" name="Usuario y password incorrecto en login - usuario valido, pwd erroneo" time="0.687"><properties><property name="tags" value="@login,@fallido"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
+<testcase classname="demoblaze.login" name="Usuario y password incorrecto en login - usuario valido, pwd erroneo" time="0.292"><properties><property name="tags" value="@login,@fallido"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
 karate.env = qa
 * baseUrl
 * &apos;login&apos;
 * user = usuario.username
 * requestBody = { username: &apos;#(user)&apos;, password: &apos;#(encodePassword(&quot;ClaveErronea1&quot;))&apos; }
 * &apos;ENTRADA login incorrecto (usuario valido, pwd erroneo):&apos;, requestBody
-ENTRADA login incorrecto (usuario valido, pwd erroneo): {&quot;username&quot;:&quot;sofka_1791009202531_2401&quot;,&quot;password&quot;:&quot;Q2xhdmVFcnJvbmVhMQ==&quot;}
+ENTRADA login incorrecto (usuario valido, pwd erroneo): {&quot;username&quot;:&quot;sofka_1791048186640_7714&quot;,&quot;password&quot;:&quot;Q2xhdmVFcnJvbmVhMQ==&quot;}
 Given requestBody
 When post
 request:
@@ -92,16 +92,16 @@ request:
 1 &gt; Connection: keep-alive
 1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
 {
-  &quot;username&quot;: &quot;sofka_1791009202531_2401&quot;,
+  &quot;username&quot;: &quot;sofka_1791048186640_7714&quot;,
   &quot;password&quot;: &quot;Q2xhdmVFcnJvbmVhMQ==&quot;
 }
 
-response time in milliseconds: 177
+response time in milliseconds: 134
 1 &lt; 200 POST https://api.demoblaze.com/login
-1 &lt; date: Sat, 03 Oct 2026 06:33:25 GMT
+1 &lt; date: Sat, 03 Oct 2026 17:23:08 GMT
 1 &lt; server: Google Frontend
 1 &lt; vary: Accept-Encoding
-1 &lt; x-cloud-trace-context: d06c19b33aa111cf1cddeda2416375e9
+1 &lt; x-cloud-trace-context: a625c0a3ffb1ce3a0c30df536eddcb49
 1 &lt; content-type: application/json
 1 &lt; Content-Length: 35
 {
@@ -109,20 +109,20 @@ response time in milliseconds: 177
 }
 
 POST https://api.demoblaze.com/login
-200 (177 ms)
+200 (134 ms)
 * &apos;SALIDA login incorrecto (usuario valido, pwd erroneo) -&gt; status:&apos;, responseStatus, &apos;body:&apos;, response
 SALIDA login incorrecto (usuario valido, pwd erroneo) -&gt; status: 200 body: {&quot;errorMessage&quot;:&quot;Wrong password.&quot;}
 Then 200
 And response == { errorMessage: &apos;Wrong password.&apos; }
 </system-out></testcase>
-<testcase classname="demoblaze.login" name="Usuario y password incorrecto en login - usuario inexistente" time="0.737"><properties><property name="tags" value="@login,@fallido"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
+<testcase classname="demoblaze.login" name="Usuario y password incorrecto en login - usuario inexistente" time="0.28"><properties><property name="tags" value="@login,@fallido"/></properties><system-out>* usuario = callonce read(&apos;crear-usuario.feature&apos;)
 karate.env = qa
 * baseUrl
 * &apos;login&apos;
 * user = uniqueUsername(&apos;noexiste&apos;)
 * requestBody = { username: &apos;#(user)&apos;, password: &apos;#(encodePassword(&quot;ClaveErronea1&quot;))&apos; }
 * &apos;ENTRADA login incorrecto (usuario inexistente):&apos;, requestBody
-ENTRADA login incorrecto (usuario inexistente): {&quot;username&quot;:&quot;noexiste_1791009205933_1556&quot;,&quot;password&quot;:&quot;Q2xhdmVFcnJvbmVhMQ==&quot;}
+ENTRADA login incorrecto (usuario inexistente): {&quot;username&quot;:&quot;noexiste_1791048188057_6629&quot;,&quot;password&quot;:&quot;Q2xhdmVFcnJvbmVhMQ==&quot;}
 Given requestBody
 When post
 request:
@@ -133,16 +133,16 @@ request:
 1 &gt; Connection: keep-alive
 1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
 {
-  &quot;username&quot;: &quot;noexiste_1791009205933_1556&quot;,
+  &quot;username&quot;: &quot;noexiste_1791048188057_6629&quot;,
   &quot;password&quot;: &quot;Q2xhdmVFcnJvbmVhMQ==&quot;
 }
 
-response time in milliseconds: 190
+response time in milliseconds: 131
 1 &lt; 200 POST https://api.demoblaze.com/login
-1 &lt; date: Sat, 03 Oct 2026 06:33:26 GMT
+1 &lt; date: Sat, 03 Oct 2026 17:23:08 GMT
 1 &lt; server: Google Frontend
 1 &lt; vary: Accept-Encoding
-1 &lt; x-cloud-trace-context: d35806b866ee2e538c41e1488b1325f0
+1 &lt; x-cloud-trace-context: 4db388de5296fbb607d92e27f58f45ef
 1 &lt; content-type: application/json
 1 &lt; Content-Length: 40
 {
@@ -150,7 +150,7 @@ response time in milliseconds: 190
 }
 
 POST https://api.demoblaze.com/login
-200 (190 ms)
+200 (131 ms)
 * &apos;SALIDA login incorrecto (usuario inexistente) -&gt; status:&apos;, responseStatus, &apos;body:&apos;, response
 SALIDA login incorrecto (usuario inexistente) -&gt; status: 200 body: {&quot;errorMessage&quot;:&quot;User does not exist.&quot;}
 Then 200
