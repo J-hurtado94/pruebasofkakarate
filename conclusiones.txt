@@ -1,0 +1,108 @@
+HALLAZGOS Y CONCLUSIONES - PRUEBAS API DEMOBLAZE (SIGNUP / LOGIN) CON KARATE
+=============================================================================
+
+1. ENTRADAS IDENTIFICADAS
+-------------------------
+Ambos servicios reciben un POST con header Content-Type: application/json y el body:
+
+    { "username": "<texto>", "password": "<password codificado en Base64>" }
+
+El front de demoblaze (https://www.demoblaze.com) codifica el password en Base64 (btoa)
+antes de enviarlo, y la suite hace lo mismo. Ejemplo: "Sofka123*" -> "U29ma2ExMjMq".
+
+2. SALIDAS CAPTURADAS POR CASO
+------------------------------
+(Valores reales de la ultima ejecucion; el detalle esta en reportes/feature-html/)
+
+  Caso 1 - Crear un nuevo usuario en signup
+    Entrada : {"username":"sofka_1791009206703_6947","password":"U29ma2ExMjMq"}
+    Salida  : HTTP 200 - body: ""   (string JSON vacio)
+    Resultado: OK - el usuario se crea.
+
+  Caso 2 - Intentar crear un usuario ya existente
+    Entrada : {"username":"<usuario creado previamente>","password":"U29ma2ExMjMq"}
+    Salida  : HTTP 200 - body: {"errorMessage":"This user already exist."}
+    Resultado: OK - el servicio rechaza el duplicado con un mensaje de error.
+
+  Caso 3 - Usuario y password correcto en login
+    Entrada : {"username":"sofka_1791009202531_2401","password":"U29ma2ExMjMq"}
+    Salida  : HTTP 200 - body: "Auth_token: c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ=="
+    Resultado: OK - se entrega un token de autenticacion.
+
+  Caso 4 - Usuario y password incorrecto en login
+    4a. Usuario existente + password erroneo
+        Salida  : HTTP 200 - body: {"errorMessage":"Wrong password."}
+    4b. Usuario inexistente
+        Salida  : HTTP 200 - body: {"errorMessage":"User does not exist."}
+    Resultado: OK - el login es rechazado en ambos casos.
+
+Resultado de la suite: 5 de 5 escenarios exitosos (2 features).
+
+3. HALLAZGOS
+------------
+H1. Codigos HTTP no semanticos.
+    El servicio responde HTTP 200 en todos los casos, incluso en los de error (usuario
+    duplicado, password incorrecto, usuario inexistente). Lo esperado en REST seria
+    201 Created para el registro, 409 Conflict para el duplicado y 401 Unauthorized
+    para el login fallido. Por eso las pruebas no pueden confiar solo en el status y
+    validan el body (ausencia o presencia de "errorMessage").
+
+H2. Formato de respuesta inconsistente.
+    En el caso exitoso el body es un string JSON ("" en signup, "Auth_token: ..." en login),
+    mientras que en el caso de error es un objeto JSON {"errorMessage": ...}. Un consumidor
+    tiene que manejar dos tipos distintos para el mismo endpoint. Ademas, Karate v2 no
+    convierte automaticamente el string JSON "" (con salto de linea), asi que se parsea
+    explicitamente con JSON.parse(response).
+
+H3. Mensaje con error gramatical: "This user already exist." (deberia ser "exists").
+
+H4. El login permite enumerar usuarios.
+    Los mensajes "User does not exist." y "Wrong password." son distintos, asi que un
+    atacante puede saber que usernames estan registrados. La buena practica es un mensaje
+    generico (por ejemplo "Usuario o password invalido").
+
+H5. Token predecible.
+    El token es solo Base64 de <username> + <numero>. Ejemplo: decodificar
+    "c29ma2FfMTc5MTAwOTIwMjUzMV8yNDAxMTc5MTYwOQ==" da "sofka_1791009202531_24011791609".
+    No esta firmado ni es aleatorio, y en logins consecutivos se obtiene el mismo token.
+
+H6. Password "codificado" en Base64.
+    Base64 es una codificacion reversible, no un cifrado ni un hash. La proteccion real
+    depende solo de HTTPS. Ademas, si se envia el password en texto plano el servicio
+    responde "Wrong password.", asi que el contrato depende de que el cliente codifique.
+
+H7. Falta validacion de entrada.
+    Un signup con username y password vacios ({"username":"","password":""}) responde
+    HTTP 500 Internal Server Error con una pagina HTML, en vez de un 400 Bad Request
+    con un mensaje JSON.
+
+H8. Inestabilidad del servidor.
+    Alrededor del 10-15% de las conexiones se quedan colgadas en el handshake TLS y
+    terminan en timeout (medido tambien con curl, fuera de Karate: 2 de 15 peticiones).
+    Ademas, api.demoblaze.com publica un registro IPv6; en redes sin ruta IPv6, Java falla
+    con NoRouteToHostException.
+    Mitigaciones aplicadas en el proyecto:
+      - -Djava.net.preferIPv4Stack=true en la JVM de pruebas.
+      - connectTimeout de 5 s para fallar rapido (un handshake normal tarda menos de 1 s).
+      - Reintento automatico de la suite con el plugin org.gradle.test-retry (hasta 6 veces).
+    Nota: "retry until" de Karate solo reintenta segun la respuesta y no ante excepciones
+    de red, por eso el reintento se hace a nivel de Gradle.
+
+H9. Otros comportamientos observados.
+    - El username distingue mayusculas de minusculas en el login.
+    - Un GET a /login responde 405 Method Not Allowed (correcto).
+
+4. CONCLUSIONES
+---------------
+- Los 4 casos pedidos se automatizaron con Karate y pasan: signup crea usuarios y
+  rechaza duplicados, y login autentica con credenciales validas y rechaza las invalidas.
+- La suite es repetible: cada ejecucion genera usuarios unicos y el caso de usuario
+  existente crea su propia precondicion, sin depender de datos previos.
+- Funcionalmente los servicios cumplen, pero el diseno del API tiene oportunidades de
+  mejora importantes: codigos HTTP, consistencia del formato de respuesta, validacion
+  de entradas y seguridad (enumeracion de usuarios y token predecible).
+- La inestabilidad de red del servidor es el principal riesgo para ejecutar la suite en
+  un pipeline de CI. Se mitigo con reintentos, pero conviene monitorearla.
+- Karate permitio cubrir el ejercicio con poco codigo: features legibles en Gherkin,
+  match para validar estructuras y regex, call/callonce para reutilizar precondiciones,
+  y reportes HTML con el detalle de cada request/response.

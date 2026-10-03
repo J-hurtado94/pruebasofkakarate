@@ -1,0 +1,6 @@
+plugins {
+    // Descarga automaticamente un JDK 21 si la maquina no lo tiene instalado
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'pruebatecnicasofkakarate'

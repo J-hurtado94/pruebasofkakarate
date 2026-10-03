@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'org.gradle.test-retry' version '1.6.2'
+}
+
+group = 'com.sofka.karate'
+version = '1.0-SNAPSHOT'
+
+java {
+    // Karate v2 requiere Java 21+ (virtual threads)
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'io.karatelabs:karate-core:2.1.3'
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'ch.qos.logback:logback-classic:1.5.18'
+}
+
+// Los archivos .feature y karate-config.js viven junto a los runners Java
+sourceSets {
+    test {
+        resources {
+            srcDir file('src/test/java')
+            exclude '**/*.java'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+    // api.demoblaze.com publica registro IPv6; en redes sin ruta IPv6 Java falla con NoRouteToHostException
+    jvmArgs '--enable-preview', '-Djava.net.preferIPv4Stack=true'
+    systemProperty 'karate.env', System.getProperty('karate.env')
+    outputs.upToDateWhen { false }
+    // El servidor de demoblaze deja colgado ~10% de los handshakes TLS (ver conclusiones.txt);
+    // si la suite falla por red se reintenta la suite hasta 6 veces
+    retry {
+        maxRetries = 6
+    }
+    testLogging {
+        showStandardStreams = true
+        events 'passed', 'failed', 'skipped'
+    }
+    finalizedBy 'copyKarateReports'
+}
+
+// Copia los reportes de Karate a /reportes para que queden versionados en el repositorio
+tasks.register('copyKarateReports', Copy) {
+    from layout.buildDirectory.dir('karate-reports')
+    into layout.projectDirectory.dir('reportes')
+}

@@ -1,0 +1,115 @@
+<testsuite name="Servicio Signup de Demoblaze - POST https://api.demoblaze.com/signup" tests="2" failures="0" time="2.055" skipped="0"><testcase classname="demoblaze.signup" name="Crear un nuevo usuario en signup" time="0.51"><properties><property name="tags" value="@signup,@nuevo"/></properties><system-out>* baseUrl
+karate.env = qa
+* &apos;signup&apos;
+* password = &apos;Sofka123*&apos;
+* username = uniqueUsername(&apos;sofka&apos;)
+* requestBody = { username: &apos;#(username)&apos;, password: &apos;#(encodePassword(password))&apos; }
+* &apos;ENTRADA signup nuevo usuario:&apos;, requestBody
+ENTRADA signup nuevo usuario: {&quot;username&quot;:&quot;sofka_1791009206703_6947&quot;,&quot;password&quot;:&quot;U29ma2ExMjMq&quot;}
+Given requestBody
+When post
+request:
+1 &gt; POST https://api.demoblaze.com/signup
+1 &gt; Content-Type: application/json; charset=UTF-8
+1 &gt; Host: api.demoblaze.com
+1 &gt; Content-Length: 65
+1 &gt; Connection: keep-alive
+1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
+{
+  &quot;username&quot;: &quot;sofka_1791009206703_6947&quot;,
+  &quot;password&quot;: &quot;U29ma2ExMjMq&quot;
+}
+
+response time in milliseconds: 300
+1 &lt; 200 POST https://api.demoblaze.com/signup
+1 &lt; date: Sat, 03 Oct 2026 06:33:27 GMT
+1 &lt; server: Google Frontend
+1 &lt; x-cloud-trace-context: 8c353d3c8ed2c475e98fbc64a5c1f3f9
+1 &lt; content-type: application/json
+1 &lt; Content-Length: 3
+&quot;&quot;
+
+
+POST https://api.demoblaze.com/signup
+200 (300 ms)
+* &apos;SALIDA signup nuevo usuario -&gt; status:&apos;, responseStatus, &apos;body:&apos;, response
+SALIDA signup nuevo usuario -&gt; status: 200 body: &quot;&quot;
+
+Then 200
+And JSON.parse(response) == &apos;&apos;
+And header Content-Type contains &apos;application/json&apos;
+</system-out></testcase>
+<testcase classname="demoblaze.signup" name="Intentar crear un usuario ya existente" time="1.542"><properties><property name="tags" value="@signup,@existente"/></properties><system-out>* baseUrl
+karate.env = qa
+* &apos;signup&apos;
+* password = &apos;Sofka123*&apos;
+* usuario = call read(&apos;crear-usuario.feature&apos;)
+* username = uniqueUsername(&apos;sofka&apos;)
+* password = &apos;Sofka123*&apos;
+Given baseUrl
+And &apos;signup&apos;
+And { username: &apos;#(username)&apos;, password: &apos;#(encodePassword(password))&apos; }
+When post
+request:
+1 &gt; POST https://api.demoblaze.com/signup
+1 &gt; Content-Type: application/json; charset=UTF-8
+1 &gt; Host: api.demoblaze.com
+1 &gt; Content-Length: 64
+1 &gt; Connection: keep-alive
+1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
+{
+  &quot;username&quot;: &quot;sofka_1791009207219_440&quot;,
+  &quot;password&quot;: &quot;U29ma2ExMjMq&quot;
+}
+
+response time in milliseconds: 242
+1 &lt; 200 POST https://api.demoblaze.com/signup
+1 &lt; date: Sat, 03 Oct 2026 06:33:28 GMT
+1 &lt; server: Google Frontend
+1 &lt; x-cloud-trace-context: 167a894883a26ebb41a7e194c86f69e8
+1 &lt; content-type: application/json
+1 &lt; Content-Length: 3
+&quot;&quot;
+
+
+POST https://api.demoblaze.com/signup
+200 (242 ms)
+Then 200
+And JSON.parse(response) == &apos;&apos;
+* requestBody = { username: &apos;#(usuario.username)&apos;, password: &apos;#(encodePassword(usuario.password))&apos; }
+* &apos;ENTRADA signup usuario existente:&apos;, requestBody
+ENTRADA signup usuario existente: {&quot;username&quot;:&quot;sofka_1791009207219_440&quot;,&quot;password&quot;:&quot;U29ma2ExMjMq&quot;}
+Given requestBody
+When post
+request:
+1 &gt; POST https://api.demoblaze.com/signup
+1 &gt; Content-Type: application/json; charset=UTF-8
+1 &gt; Host: api.demoblaze.com
+1 &gt; Content-Length: 64
+1 &gt; Connection: keep-alive
+1 &gt; User-Agent: Apache-HttpClient/5.6.4 (Java/21.0.12.1)
+{
+  &quot;username&quot;: &quot;sofka_1791009207219_440&quot;,
+  &quot;password&quot;: &quot;U29ma2ExMjMq&quot;
+}
+
+response time in milliseconds: 179
+1 &lt; 200 POST https://api.demoblaze.com/signup
+1 &lt; date: Sat, 03 Oct 2026 06:33:28 GMT
+1 &lt; server: Google Frontend
+1 &lt; vary: Accept-Encoding
+1 &lt; x-cloud-trace-context: 14e2a7d4bbb1a8edd2a7f64da2307b52
+1 &lt; content-type: application/json
+1 &lt; Content-Length: 44
+{
+  &quot;errorMessage&quot;: &quot;This user already exist.&quot;
+}
+
+POST https://api.demoblaze.com/signup
+200 (179 ms)
+* &apos;SALIDA signup usuario existente -&gt; status:&apos;, responseStatus, &apos;body:&apos;, response
+SALIDA signup usuario existente -&gt; status: 200 body: {&quot;errorMessage&quot;:&quot;This user already exist.&quot;}
+Then 200
+And response == { errorMessage: &apos;This user already exist.&apos; }
+</system-out></testcase>
+</testsuite>
